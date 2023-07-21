@@ -1,5 +1,9 @@
-const { getDummyUserDetailData } = require("../../utils/dummyData");
-const { getDummyAdminDetailData } = require("../../utils/dummyData");
+const {
+  getDummyUserDetailData,
+  getDummyAdminDetailData,
+  modifyCoordinates,
+  updateStatusForAllUsers,
+} = require("../../utils/dummyData");
 const dummyAdminDetailData = getDummyAdminDetailData(); // Fetch the dummy data here
 const dummyDetailData = getDummyUserDetailData(); // Fetch the dummy data here
 //note that the report notification is in array, to trigger which notification lights up, refer to the admin ID
@@ -70,6 +74,8 @@ const getNearestAdminID = (user, dummyAdminDetailData) => {
   return null;
 };
 
+const emittedNotifications = []; // Array to keep track of emitted notifications
+
 const generateNotification = (dummyDetailData) => {
   const notificationsData = [];
   dummyDetailData.forEach((user) => {
@@ -86,7 +92,19 @@ const generateNotification = (dummyDetailData) => {
         accepted: false,
       };
 
-      notificationsData.push(notification);
+      const isDuplicateNotification = emittedNotifications.some(
+        (emittedNotification) => {
+          return (
+            emittedNotification.userID === notification.userID &&
+            emittedNotification.adminID === notification.adminID
+          );
+        }
+      );
+
+      if (!isDuplicateNotification) {
+        notificationsData.push(notification);
+        emittedNotifications.push(notification);
+      }
     }
   });
 
@@ -94,14 +112,19 @@ const generateNotification = (dummyDetailData) => {
 };
 
 const notificationHandler = (socket) => {
-  // Function to trigger notificationHandler every 1 minute
+  setInterval(() => modifyCoordinates(3), 10000);
+  setInterval(() => updateStatusForAllUsers(), 30000);
+
+  // Function to trigger notificationHandler every 20 seconds
   setInterval(() => {
     const notificationsData = generateNotification(dummyDetailData);
 
     if (notificationsData.length > 0) {
-      socket.emit("report-notifications", notificationsData);
+      // socket.emit("report-notifications", notificationsData);
+      // convert to pure JSON
+      socket.emit("report-notifications", JSON.stringify(notificationsData));
     }
-  }, 6000);
+  }, 8000);
 };
 
 module.exports = notificationHandler;
