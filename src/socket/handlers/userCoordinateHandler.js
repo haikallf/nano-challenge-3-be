@@ -19,6 +19,7 @@ const userCoordinatesHandler = (socket) => {
     const usersCoordinates = dummyDetailData.map((user) => ({
       userID: user.userID,
       status: user.status,
+      pinType: user.pinType,
       geolocationCoordinates: user.geolocationCoordinates,
     }));
     return usersCoordinates;
@@ -39,6 +40,7 @@ const userCoordinatesHandler = (socket) => {
       !data ||
       !data.userID ||
       !data.status ||
+      !data.pinType ||
       !data.geolocationCoordinates ||
       !data.geolocationCoordinates.latitude ||
       !data.geolocationCoordinates.longitude
